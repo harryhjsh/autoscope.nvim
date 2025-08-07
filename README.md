@@ -1,6 +1,6 @@
 # autoscope.nvim
 
-Automatically scope Telescope pickers to workspace package directories without mutating nvim's cwd.
+Automatically scope Telescope pickers to workspace package directories. Hopefully helpful in monorepos.
 
 ## Installation + Configuration
 
@@ -34,6 +34,8 @@ Current default presets:
 Once a list of workspace packages has been gathered, the plugin takes the path of a file and detects which worksace package it's in. 
 
 You can probably use this for other stuff (including populating `cwd` for your own/other custom pickers), but the built-in functionality is to pass this directory to the `cwd` of some builtin Telescope pickers.
+
+It is important (to me, for some reason) that none of this mutates nvim's `cwd`, so other things that rely on that (including unwrapped builtin telescope pickers) aren't affected.
 
 ### Wrapped builtin pickers
 * `find_files`
