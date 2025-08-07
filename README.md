@@ -22,18 +22,29 @@ Presets are descriptions of workspace tools. The name `preset` should probably b
 Both of these things happen during `setup()` for all configured tools until one returns some packages.
 
 Current default presets:
-* `pnpm` -> detects `pnpm-workspace.yaml` and calls `pnpm ls`
-* `npm` -> detects `(package.json).workspaces` and calls `npm query .workspaces`. Running `npm install` seems to be a pre-requisite of new workspace packages appearing in this output.
-* with more (`yarn`, `cargo`, `moon`, `nx`) TODO -- or define your own during `setup()`.
+* `pnpm`
+    * detects `pnpm-workspace.yaml` and calls `pnpm ls`
+* `npm` 
+    * detects `(package.json).workspaces` and calls `npm query .workspaces`
+    * Running `npm install` seems to be a pre-requisite of new workspace packages appearing in this output
+* with more (`yarn`, `cargo`, `moon`, `nx`) TODO
+    * or define your own during `setup()`
 
 ## Telescope
-Once a list of workspace packages has been gathered, the plugin takes the path of a file and detects which worksace package it's in. You can probably use this for other stuff (including populating `cwd` for your own/other custom pickers), but the built-in functionality is to pass this directory to the `cwd` of some builtin Telescope pickers.
+Once a list of workspace packages has been gathered, the plugin takes the path of a file and detects which worksace package it's in. 
+
+You can probably use this for other stuff (including populating `cwd` for your own/other custom pickers), but the built-in functionality is to pass this directory to the `cwd` of some builtin Telescope pickers.
 
 ### Wrapped builtin pickers
-* `find_files` -> `:Telescope autoscope find_files`
-* `git_files` -> `:Telescope autoscope git_files`. This also needs to override what's used as the git root, so there may be other issues around using it.
-* `grep_string` -> `:Telescope autoscope grep_string`
-* `live_grep` -> `:Telescope autoscope live_grep`
+* `find_files`
+    * `:Telescope autoscope find_files`
+* `git_files`
+    * `:Telescope autoscope git_files`
+    * This also needs to override what's used as the git root, so there may be other issues around using it
+* `grep_string`
+    * `:Telescope autoscope grep_string`
+* `live_grep`
+    * `:Telescope autoscope live_grep`
 
 Telescope's builtin picker titles are hardcoded, so the same thing's been done here. This might result in some issues/annoyances.
 
