@@ -50,6 +50,7 @@ It is important (to me, for some reason) that none of this mutates nvim's `cwd`,
 
 Telescope's builtin picker titles are hardcoded, so the same thing's been done here. This might result in some issues/annoyances.
 
-## Planned
-* Telescope picker for all workspace packages
+### Other commands
+* `:Telescope autoscope list_packages`
+    * Telescope picker for all packages found in the workspace. Action opens the autoscoped `find_files` picker for that package
 
