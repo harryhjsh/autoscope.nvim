@@ -1,13 +1,13 @@
 local defaults = require("autoscope.default_presets")
 
 ---@class AutoscopeConfig
----@field presets table<string, WorkspaceTool>: extend builtin presets
----@field priorities string[]: match order for presets -- entries absent from this array won't attempt to match
----@field silent boolean: does nothing at the moment
----@field debug boolean: does nothing at the moment
----@field root_dir? string: the directory to start finding a workspace from, defaults to cwd
----@field skip_cwd? boolean: don't match "cwd" as a package directory, regardless of parse output
----@field fallback_to_builtin? boolean: use native picker if no package directory found
+---@field presets table<string, WorkspaceTool>: extend builtin presets (default: {})
+---@field priorities string[]: match order for presets -- presets absent from this array won't attempt to match (default: {"pnpm", "yarn", "npm"})
+---@field silent boolean: todo (default: false)
+---@field debug boolean: todo (default: false)
+---@field root_dir? string: the directory to find a workspace in (default: cwd)
+---@field skip_root_dir? boolean: don't match root_dir as a package directory (regardless of parse output) (default: true)
+---@field fallback_to_builtin? boolean: use matching unwrapped picker if no package directory found (default: true)
 
 ---@class AutoscopeState
 ---@field packages WorkspacePackage[]
@@ -29,8 +29,8 @@ M.config = {
   priorities = { "pnpm", "yarn", "npm" },
   silent = false,
   debug = false,
-  skip_cwd = true,
-  fallback_to_builtin = true
+  skip_root_dir = true,
+  fallback_to_builtin = true,
 }
 
 ---@type AutoscopeState
@@ -95,7 +95,7 @@ M.get_package_dir = function(path)
   local match_len = 0
   for _, pkg in ipairs(packages) do
     local root = vim.fn.fnamemodify(pkg.path, ":p:h")
-    if root == M.config.root_dir then
+    if root == M.config.root_dir and M.config.skip_root_dir then
       goto continue
     end
 
