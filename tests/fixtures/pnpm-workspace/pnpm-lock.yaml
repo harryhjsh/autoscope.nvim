@@ -1,0 +1,19 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .: {}
+
+  apps/app-1: {}
+
+  apps/app-2: {}
+
+  packages/lib-a: {}
+
+  packages/lib-b: {}
+
+  packages/lib-c: {}

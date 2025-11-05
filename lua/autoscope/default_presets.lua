@@ -33,8 +33,8 @@ return {
     end,
   },
   yarn = {
-    -- Supports Yarn Berry (v2+) with `yarn workspaces list --json`
-    -- Note: Yarn Classic (v1) uses `yarn workspaces info` with different output format
+    -- Supports Yarn Classic (v1) with `yarn workspaces info`
+    -- Yarn Classic outputs JSON wrapped in plain text, e.g.: { "pkg-name": { "location": "packages/pkg", ... } }
     detect = function()
       if vim.fn.filereadable("package.json") == 0 then
         return false
@@ -45,21 +45,27 @@ return {
       end)
       return ok and type(content) == "table" and content.workspaces ~= nil
     end,
-    cmd = { "yarn", "workspaces", "list", "--json" },
+    cmd = { "yarn", "workspaces", "info" },
     parse = function(output)
-      -- Yarn Berry outputs NDJSON (newline-delimited JSON)
-      -- Each line is a separate JSON object like: {"location":"packages/foo","name":"foo"}
+      -- Yarn Classic outputs JSON wrapped in text, need to extract it
+      -- The output looks like: "yarn workspaces v1.22.22\n{...json...}\nDone in 0.05s."
+      local json_str = output:match("{.*}")
+      if not json_str then
+        return {}
+      end
+      local ok, data = pcall(vim.json.decode, json_str)
+      if not ok or type(data) ~= "table" then
+        return {}
+      end
       local packages = {}
-      for line in output:gmatch("[^\r\n]+") do
-        if line ~= "" then
-          local ok, pkg = pcall(vim.json.decode, line)
-          if ok and type(pkg) == "table" and pkg.name and pkg.location then
-            local abs_path = vim.fn.fnamemodify(pkg.location, ":p:h")
-            table.insert(packages, {
-              name = pkg.name,
-              path = abs_path,
-            })
-          end
+      -- Data is an object with workspace names as keys
+      for name, info in pairs(data) do
+        if info.location then
+          local abs_path = vim.fn.fnamemodify(info.location, ":p:h")
+          table.insert(packages, {
+            name = name,
+            path = abs_path,
+          })
         end
       end
       return packages

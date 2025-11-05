@@ -1,0 +1,5 @@
+{
+  "name": "@test/npm-lib-a",
+  "version": "1.0.0",
+  "private": true
+}

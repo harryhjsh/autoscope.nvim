@@ -1,0 +1,1 @@
+{"lastHash":"00484b63cbf11c85c0376cf772d7993da4e103e1c85d7276e82738ec257fb498","projects":{"app-1":{"node_index":0,"source":"apps/app-1"},"app-2":{"node_index":1,"source":"apps/app-2"},"lib-b":{"node_index":2,"source":"packages/lib-b"},"lib-c":{"node_index":3,"source":"packages/lib-c"},"lib-a":{"node_index":4,"source":"packages/lib-a"}}}
