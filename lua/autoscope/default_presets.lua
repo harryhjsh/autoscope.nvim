@@ -33,9 +33,37 @@ return {
     end,
   },
   yarn = {
-    cmd = {},
-    detect = function() end,
-    parse = function() end,
+    -- Supports Yarn Berry (v2+) with `yarn workspaces list --json`
+    -- Note: Yarn Classic (v1) uses `yarn workspaces info` with different output format
+    detect = function()
+      if vim.fn.filereadable("package.json") == 0 then
+        return false
+      end
+      local ok, content = pcall(function()
+        local lines = vim.fn.readfile("package.json")
+        return vim.json.decode(table.concat(lines, "\n"))
+      end)
+      return ok and type(content) == "table" and content.workspaces ~= nil
+    end,
+    cmd = { "yarn", "workspaces", "list", "--json" },
+    parse = function(output)
+      -- Yarn Berry outputs NDJSON (newline-delimited JSON)
+      -- Each line is a separate JSON object like: {"location":"packages/foo","name":"foo"}
+      local packages = {}
+      for line in output:gmatch("[^\r\n]+") do
+        if line ~= "" then
+          local ok, pkg = pcall(vim.json.decode, line)
+          if ok and type(pkg) == "table" and pkg.name and pkg.location then
+            local abs_path = vim.fn.fnamemodify(pkg.location, ":p:h")
+            table.insert(packages, {
+              name = pkg.name,
+              path = abs_path,
+            })
+          end
+        end
+      end
+      return packages
+    end,
   },
   npm = {
     cmd = { "npm", "query", ".workspace", "--json" },
@@ -74,9 +102,35 @@ return {
     parse = function() end,
   },
   moon = {
-    cmd = {},
-    detect = function() end,
-    parse = function() end,
+    -- moonrepo - Build orchestrator and monorepo management tool
+    detect = function()
+      -- Check for .moon/workspace.yml or .moon/workspace.pkl (Pkl config support)
+      return vim.fn.isdirectory(".moon") == 1
+        and (vim.fn.filereadable(".moon/workspace.yml") == 1 or vim.fn.filereadable(".moon/workspace.pkl") == 1)
+    end,
+    cmd = { "moon", "query", "projects", "--json" },
+    parse = function(output)
+      -- moon outputs JSON array of projects
+      -- Each project has fields like: id, source, type, language, etc.
+      local ok, data = pcall(vim.json.decode, output)
+      if not ok or type(data) ~= "table" then
+        return {}
+      end
+      local packages = {}
+      -- Handle both array format and object format
+      local projects = data.projects or data
+      for _, project in ipairs(projects) do
+        -- Use 'id' for name and 'source' for path
+        if project.id and project.source then
+          local abs_path = vim.fn.fnamemodify(project.source, ":p:h")
+          table.insert(packages, {
+            name = project.id,
+            path = abs_path,
+          })
+        end
+      end
+      return packages
+    end,
   },
   turbo = {
     cmd = {},
