@@ -15,42 +15,49 @@ For config, check [init.lua](./lua/autoscope/init.lua) until I can be bothered t
 Type definitions for configuring additional presets are in [default_presets.lua](./lua/autoscope/default_presets.lua) for now.
 
 ## Presets
+
 Presets are descriptions of workspace tools. The name `preset` should probably be changed. They:
-* Check whether the current directory is managed by the workspace tool (package manager or other orchestrator)
-* Call the tool to get a list of workspace packages
+
+- Check whether the current directory is managed by the workspace tool (package manager or other orchestrator)
+- Call the tool to get a list of workspace packages
 
 Both of these things happen during `setup()` for all configured tools until one returns some packages.
 
 Current default presets:
-* `pnpm`
-    * detects `pnpm-workspace.yaml` and calls `pnpm ls`
-* `npm` 
-    * detects `(package.json).workspaces` and calls `npm query .workspaces`
-    * Running `npm install` seems to be a pre-requisite of new workspace packages appearing in this output
-* with more (`yarn`, `cargo`, `moon`, `nx`) TODO
-    * or define your own during `setup()`
+
+- `pnpm`
+  - detects `pnpm-workspace.yaml` and calls `pnpm ls`
+- `npm`
+  - detects `(package.json).workspaces` and calls `npm query .workspaces`
+  - Running `npm install` seems to be a pre-requisite of new workspace packages appearing in this output
+- with more (`yarn`, `cargo`, `moon`, `nx`) TODO
+  - or define your own during `setup()`
 
 ## Telescope
-Once a list of workspace packages has been gathered, the plugin takes the path of a file and detects which worksace package it's in. 
+
+Once a list of workspace packages has been gathered, the plugin takes the path of a file and detects which worksace package it's in.
 
 You can probably use this for other stuff (including populating `cwd` for your own/other custom pickers), but the built-in functionality is to pass this directory to the `cwd` of some builtin Telescope pickers.
 
 It is important (to me, for some reason) that none of this mutates nvim's `cwd`, so other things that rely on that (including unwrapped builtin telescope pickers) aren't affected.
 
 ### Wrapped builtin pickers
-* `find_files`
-    * `:Telescope autoscope find_files`
-* `git_files`
-    * `:Telescope autoscope git_files`
-    * This also needs to override what's used as the git root, so there may be other issues around using it
-* `grep_string`
-    * `:Telescope autoscope grep_string`
-* `live_grep`
-    * `:Telescope autoscope live_grep`
+
+- `find_files`
+  - `:Telescope autoscope find_files`
+- `git_files`
+  - `:Telescope autoscope git_files`
+  - This also needs to override what's used as the git root, so there may be other issues around using it
+- `grep_string`
+  - `:Telescope autoscope grep_string`
+- `live_grep`
+  - `:Telescope autoscope live_grep`
+
+When autoscope matches the root package (which depends on configuration), wrapped pickers exclude directories that belong to other detected packages (unless you've modified the find_command (PRs on this would be accepted if this is annoying)).
 
 Telescope's builtin picker titles are hardcoded, so the same thing's been done here. This might result in some issues/annoyances.
 
 ### Other commands
-* `:Telescope autoscope list_packages`
-    * Telescope picker for all packages found in the workspace. Action opens the autoscoped `find_files` picker for that package
 
+- `:Telescope autoscope list_packages`
+  - Telescope picker for all packages found in the workspace. Action opens the autoscoped `find_files` picker for that package

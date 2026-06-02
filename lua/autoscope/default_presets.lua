@@ -5,7 +5,7 @@
 ---@class WorkspaceTool
 ---@field detect fun(): boolean Function to detect if this workspace tool is used in the current project
 ---@field cmd table Command array to execute for listing workspace packages
----@field parse fun(output: string): WorkspacePackage[] Function to parse the command output into a list of workspace packages
+---@field parse fun(output: string, cwd?: string): WorkspacePackage[] Function to parse the command output into a list of workspace packages
 
 ---@type table<string, WorkspaceTool>
 return {
@@ -88,4 +88,35 @@ return {
     detect = function() end,
     parse = function() end,
   },
+  gitmodules = {
+    detect = function()
+      return vim.fn.filereadable(".gitmodules") == 1
+    end,
+    cmd = { "git", "config", "--file", ".gitmodules", "--get-regexp", "^submodule\\..*\\.path$" },
+    parse = function(output, cwd)
+      local root = cwd or vim.fn.getcwd()
+      local packages = {
+        {
+          name = "(root)",
+          path = vim.fn.fnamemodify(root .. "/.", ":p:h"),
+        },
+      }
+      for line in output:gmatch("[^\r\n]+") do
+        local key, submodule_path = line:match("^(%S+)%s+(.+)$")
+        if key and submodule_path then
+          local name = key:match("^submodule%.(.*)%.path$")
+          if name then
+            local abs_path = vim.fn.fnamemodify(root .. "/" .. submodule_path .. "/.", ":p:h")
+            if abs_path ~= packages[1].path then
+              table.insert(packages, {
+                name = name,
+                path = abs_path,
+              })
+            end
+          end
+        end
+      end
+      return packages
+    end,
+  }
 }
